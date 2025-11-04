@@ -1,3 +1,6 @@
+import { Header } from "../component/header";
+import "../app/global.css";
+
 export default function RootLayout({
   children,
 }: {
@@ -6,14 +9,8 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <header 
-            style={{
-                backgroundColor: "lightblue",
-                padding: "1rem"
-            }}
-        >
-            <p>Header</p>
-        </header>
+        <Header />
+
 
         {children}
 
