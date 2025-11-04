@@ -9,3 +9,8 @@ How to run:
 2. access into the "frontend" folder (cd frontend)
 3. Write: "npm run dev"
 4. Access the web through the local link
+
+The References:
+
+1. Authentication Flow in Next.js: https://www.youtube.com/watch?v=Otq0LY90Qso
+

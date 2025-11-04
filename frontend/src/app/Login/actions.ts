@@ -1,46 +1,46 @@
-"use server";
+/*action.ts */
+/*Not used for now as it's the backend job*/
 
-import { error } from "console";
-import { z } from "zod";
-import { createSession } from "../_lib/session";
-import { redirect } from "next/navigation";
+// "use server";
 
-const testUser = {
-    id: '1',
-    email: "testing@site.com",
-    password: "12345678"
-};
+// import { z } from "zod";
+// import { createSession } from "../_lib/session";
+// import { redirect } from "next/navigation";
 
-const loginSchema = z.object({
-    email: z.string().email({message: "Invalid email address"}).trim(),
-    password: z
-        .string()
-        .min(8, {message: "Your password it too small!"})
-        .trim(),
-});
+// const testUser = {
+//     id: '1',
+//     email: "testing@site.com",
+//     password: "12345678"
+// };
 
-export async function login(prevState: any, formData: FormData) {
-    const result = loginSchema.safeParse(Object.fromEntries(formData));
+// const loginSchema = z.object({
+//     email: z.email({ message: "Invalid email address" }).trim(),
+//     password: z
+//         .string()
+//         .min(8, {message: "Your password it too small!"})
+//         .trim(),
+// });
 
-    if (!result.success) {
-        return{
-            errors: result.error.flatten().fieldErrors,
-        }
-    }
+// export async function login(prevState: any, formData: FormData) {
+//     const result = loginSchema.safeParse(Object.fromEntries(formData));
 
-    const {email, password} = result.data;
+//     if (!result.success) {
+//         return { errors: result.error.flatten().fieldErrors };
+//     }
 
-    if (email !== testUser.email || password !== testUser.password) {
-        return {
-            errors: {
-                email: ["Invalid email or password"],
-            }
-        }
-    }
+//     const {email, password} = result.data;
 
-    await createSession(testUser.id);
+//     if (email !== testUser.email || password !== testUser.password) {
+//         return {
+//             errors: {
+//                 email: ["Invalid email or password"],
+//             }
+//         }
+//     }
 
-    redirect("/Dashboard");
-}
+//     await createSession(testUser.id);
 
-export async function logout() {}
+//     redirect("/Profile");
+// }
+
+// export async function logout() {}

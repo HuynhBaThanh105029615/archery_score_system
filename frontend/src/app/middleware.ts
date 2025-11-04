@@ -1,24 +1,31 @@
-import { NextRequest, NextResponse } from "next/server";
-import { decrypt } from "./_lib/session";
+/*middleware.ts */
 
-const protectedRoutes = ["/Dashboard"];
-const publicRoutes = ['/Login'];
+//Not used now.
 
-export default async function middleware(req: NextRequest) {
-    const path = req.nextUrl.pathname;
-    const isProtectedRoute = protectedRoutes.includes(path);
-    const isPublicRoute = publicRoutes.includes(path);
+// import { NextRequest, NextResponse } from "next/server";
+// import { decrypt } from "./_lib/session";
 
-    const cookie = req.cookies.get("session")?.value;
-    const session = await decrypt(cookie);
+// const protectedRoutes = ["/Profile"];
+// const publicRoutes = ["/Login"];
 
-    if (isProtectedRoute && !session?.userId) {
-        return NextResponse.redirect(new URL("/Login", req.url));
-    }
+// export default async function middleware(req: NextRequest) {
+//   const path = req.nextUrl.pathname;
+//   const isProtectedRoute = protectedRoutes.includes(path);
+//   const isPublicRoute = publicRoutes.includes(path);
 
-    if (isProtectedRoute && session?.userId) {
-        return NextResponse.redirect(new URL("/Dashboard", req.url));
-    }
+//   const cookie = req.cookies.get("session")?.value;
+//   const session = await decrypt(cookie);
 
-    return NextResponse.next();
-}
+//   // 🚪 Case 1: No session but trying to access protected route
+//   if (isProtectedRoute && !session?.userId) {
+//     return NextResponse.redirect(new URL("/Login", req.url));
+//   }
+
+//   // 🚪 Case 2: Logged in but trying to access public route (like /Login)
+//   if (isPublicRoute && session?.userId) {
+//     return NextResponse.redirect(new URL("/Profile", req.url));
+//   }
+
+//   // ✅ Case 3: All other routes (allowed)
+//   return NextResponse.next();
+// }
