@@ -1,23 +1,15 @@
-import { Header } from "../component/header";
-import "../app/global.css";
-import { Footer } from "../component/footer";
+import "./global.css";
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html>
-      <body>
-        <Header />
-
-
+    <html lang="en">
+      <body className="bg-[#E3FFE4] text-gray-900">
         {children}
-
-        <Footer />
-
-        </body>
+      </body>
     </html>
-  )
+  );
 }
