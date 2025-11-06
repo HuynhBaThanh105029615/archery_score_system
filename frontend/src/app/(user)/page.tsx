@@ -50,9 +50,11 @@ export default function Home() {
           <p className="text-gray-600 text-center mb-5">
             The recent tournaments that are happening right now
           </p>
-          <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
-            Recent Tournaments
-          </button>
+          <Link href="/recorder_dashboard" className="w-full">
+            <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
+              Recent Tournaments
+            </button>
+          </Link>
         </div>
 
         {/* About card */}
