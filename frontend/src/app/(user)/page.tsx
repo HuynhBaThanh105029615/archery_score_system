@@ -24,7 +24,7 @@ export default function Home() {
           alt="Profile"
           title="Your Profile"
           description="Look at your recent scores and tournaments"
-          buttonText="Login to see your profile"
+          buttonText="Go to your Dashboard"
           href="/profile"
         />
 
@@ -34,7 +34,7 @@ export default function Home() {
           title="Tournaments"
           description="The recent tournaments that are happening right now"
           buttonText="Recent Tournaments"
-          href="/"
+          href="/tournaments"
         />
 
         <InfoCard
@@ -43,6 +43,7 @@ export default function Home() {
           title="About"
           description="The page that contains all the informations of this page"
           buttonText="About Us"
+          href="/about"
         />
       </div>
 
