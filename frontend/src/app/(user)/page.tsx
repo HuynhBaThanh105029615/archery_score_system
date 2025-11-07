@@ -30,7 +30,7 @@ export default function Home() {
           <p className="text-gray-600 text-center mb-5">
             Look at your recent scores and tournaments
           </p>
-          <Link href="/login" className="w-full">
+          <Link href="/profile" className="w-full">
             <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
               Login to see your profile
             </button>
@@ -50,7 +50,7 @@ export default function Home() {
           <p className="text-gray-600 text-center mb-5">
             The recent tournaments that are happening right now
           </p>
-          <Link href="/recorder_dashboard" className="w-full">
+          <Link href="/" className="w-full">
             <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
               Recent Tournaments
             </button>

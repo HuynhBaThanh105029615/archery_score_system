@@ -1,7 +1,10 @@
-export default function profilePage() {
-  return(
-    <>
-        <h1>Profile page</h1>
-    </>
-  );
+import { getUser } from "../../_lib/auth";
+import { redirect } from "next/navigation";
+
+export default async function ProfilePage() {
+  const user = await getUser();
+
+  if (!user) redirect("/login");
+
+  redirect(`/profile/${user.id}`);
 }
