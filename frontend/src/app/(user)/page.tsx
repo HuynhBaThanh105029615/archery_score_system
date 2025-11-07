@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { CommentCard } from "@/src/component/commentcard";
+import { InfoCard } from "@/src/component/infocard"
+import { FeatureCard } from "@/src/component/featurecard";
 
 export default function Home() {
   return (
@@ -17,63 +19,31 @@ export default function Home() {
 
       {/* Info cards */}
       <div className="max-w-6xl mx-auto my-12 grid grid-cols-1 md:grid-cols-3 gap-10 px-6">
-        {/* Profile card */}
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 p-5 flex flex-col items-center">
-          <img
-            src="/info2.jpg"
-            alt="Profile"
-            className="w-full h-56 object-cover rounded-xl mb-4"
-          />
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">
-            Your Profile
-          </h2>
-          <p className="text-gray-600 text-center mb-5">
-            Look at your recent scores and tournaments
-          </p>
-          <Link href="/profile" className="w-full">
-            <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
-              Login to see your profile
-            </button>
-          </Link>
-        </div>
+        <InfoCard
+          image="/info2.jpg"
+          alt="Profile"
+          title="Your Profile"
+          description="Look at your recent scores and tournaments"
+          buttonText="Login to see your profile"
+          href="/profile"
+        />
 
-        {/* Tournaments card */}
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 p-5 flex flex-col items-center">
-          <img
-            src="/info.jpg"
-            alt="Tournaments"
-            className="w-full h-56 object-cover rounded-xl mb-4"
-          />
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">
-            Tournaments
-          </h2>
-          <p className="text-gray-600 text-center mb-5">
-            The recent tournaments that are happening right now
-          </p>
-          <Link href="/" className="w-full">
-            <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
-              Recent Tournaments
-            </button>
-          </Link>
-        </div>
+        <InfoCard
+          image="/info.jpg"
+          alt="Tournaments"
+          title="Tournaments"
+          description="The recent tournaments that are happening right now"
+          buttonText="Recent Tournaments"
+          href="/"
+        />
 
-        {/* About card */}
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 p-5 flex flex-col items-center">
-          <img
-            src="/about.jpg"
-            alt="About"
-            className="w-full h-56 object-cover rounded-xl mb-4"
-          />
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">
-            About
-          </h2>
-          <p className="text-gray-600 text-center mb-5">
-            The page that contains all the informations of this page
-          </p>
-          <button className="bg-black text-white w-full py-2 rounded-lg hover:bg-gray-800 transition-all duration-300">
-            About Us
-          </button>
-        </div>
+        <InfoCard
+          image="/about.jpg"
+          alt="About"
+          title="About"
+          description="The page that contains all the informations of this page"
+          buttonText="About Us"
+        />
       </div>
 
       {/* Divider */}
@@ -92,38 +62,20 @@ export default function Home() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-          {/* Subsection 1 */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Personalized Profile
-            </h3>
-            <p className="text-gray-600 leading-relaxed">
-              Access your personal stats, past scores, and performance insights
-              — all in one organized dashboard that grows with your journey.
-            </p>
-          </div>
+          <FeatureCard
+            title="Personalized Profile"
+            description="Access your personal stats, past scores, and performance insights — all in one organized dashboard that grows with your journey."
+          />
 
-          {/* Subsection 2 */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Live Tournament Updates
-            </h3>
-            <p className="text-gray-600 leading-relaxed">
-              Stay informed about upcoming and ongoing archery tournaments with real-time
-              updates and live score tracking features.
-            </p>
-          </div>
+          <FeatureCard
+            title="Live Tournament Updates"
+            description="Stay informed about upcoming and ongoing archery tournaments with real-time updates and live score tracking features."
+          />
 
-          {/* Subsection 3 */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Community and Growth
-            </h3>
-            <p className="text-gray-600 leading-relaxed">
-              Connect with other archers, share your progress, and celebrate achievements.
-              ArcheryScoreHub fosters a supportive community of competitors and friends.
-            </p>
-          </div>
+          <FeatureCard
+            title="Community and Growth"
+            description="Connect with other archers, share your progress, and celebrate achievements. ArcheryScoreHub fosters a supportive community of competitors and friends."
+          />
         </div>
       </section>
 
@@ -134,51 +86,26 @@ export default function Home() {
             Comments
           </h2>
 
-          {/* Comment 1 */}
-          <div className="flex items-start gap-4 mb-6 bg-gray-50 p-5 rounded-xl shadow-sm">
-            <img
-              src="/avatar1.jpg"
-              alt="User Avatar"
-              className="w-12 h-12 rounded-full border border-gray-300"
-            />
-            <div>
-              <p className="font-semibold text-gray-900">Robin Archer</p>
-              <p className="text-gray-600 text-sm mt-1">
-                This website is really useful! I love how simple and modern it looks. Can’t wait to
-                use it for my next tournament.
-              </p>
-            </div>
-          </div>
+        <CommentCard
+          avatar="/avatar1.jpg"
+          alt="User Avatar"
+          name="Robin Archer"
+          message="This website is really useful! I love how simple and modern it looks. Can’t wait to use it for my next tournament."
+        />
 
-          {/* Comment 2 */}
-          <div className="flex items-start gap-4 mb-6 bg-gray-50 p-5 rounded-xl shadow-sm">
-            <img
-              src="/avatar2.jpg"
-              alt="User Avatar"
-              className="w-12 h-12 rounded-full border border-gray-300"
-            />
-            <div>
-              <p className="font-semibold text-gray-900">Lara Bowman</p>
-              <p className="text-gray-600 text-sm mt-1">
-                Clean layout and great color choice. It feels professional but not overwhelming.
-              </p>
-            </div>
-          </div>
+        <CommentCard
+          avatar="/avatar2.jpg"
+          alt="User Avatar"
+          name="Lara Bowman"
+          message="Clean layout and great color choice. It feels professional but not overwhelming."
+        />
 
-          {/* Comment 3 */}
-          <div className="flex items-start gap-4 bg-gray-50 p-5 rounded-xl shadow-sm">
-            <img
-              src="/avatar3.jpg"
-              alt="User Avatar"
-              className="w-12 h-12 rounded-full border border-gray-300"
-            />
-            <div>
-              <p className="font-semibold text-gray-900">Daniel Marks</p>
-              <p className="text-gray-600 text-sm mt-1">
-                Great work! I like how all sections fit together perfectly. The interface feels very modern.
-              </p>
-            </div>
-          </div>
+        <CommentCard
+          avatar="/avatar3.jpg"
+          alt="User Avatar"
+          name="Daniel Marks"
+          message="Great work! I like how all sections fit together perfectly. The interface feels very modern."
+        />
         </div>
       </section>
     </>
