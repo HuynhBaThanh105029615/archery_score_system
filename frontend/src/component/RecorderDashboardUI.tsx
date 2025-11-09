@@ -73,7 +73,7 @@ const RecorderDashboardUI: FC<Props> = ({
     .slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
+    <main className="min-h-screen text-gray-900">
       <div className="max-w-6xl mx-auto p-6 space-y-8">
         <section>
           <h2 className="text-3xl font-semibold">Welcome back 🎯</h2>

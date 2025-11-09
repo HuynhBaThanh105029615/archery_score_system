@@ -7,7 +7,7 @@ export async function getUser() {
     return { 
       id: 1, 
       name: "Tuan Le",
-      role: "archer", //change this attribute to the one's page you want an access
+      role: "manager", //change this attribute to the one's page you want an access
     };
   }
   return null;

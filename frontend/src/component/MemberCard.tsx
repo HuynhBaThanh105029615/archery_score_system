@@ -23,7 +23,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ teamMembers }) => {
                 <img
                 src={member.avatarUrl}
                 alt={member.name}
-                className="w-24 h-24 mx-auto rounded-full mb-4"
+                className="w-24 h-24 mx-auto rounded-full mb-4 object-cover object-center border border-gray-300 shadow-sm hover:shadow-md transition-shadow duration-300"
                 />
                 <h3 className="text-xl font-semibold">{member.name}</h3>
                 <p className="text-blue-600 font-medium">{member.role}</p>

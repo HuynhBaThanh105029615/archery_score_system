@@ -1,4 +1,4 @@
-import React from "react";
+
 import { TournamentItem } from "@/src/component/RecorderDashboardUI";
 
 interface TournamentListProps {

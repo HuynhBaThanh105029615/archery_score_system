@@ -44,7 +44,7 @@ const RecorderTournamentUI: FC<Props> = ({
   }, [scores]);
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
+    <main className="min-h-screen flex flex-col items-center py-10">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-8 space-y-6">
         <h1 className="text-2xl font-semibold text-gray-800">
           🏹 {tournamentName}

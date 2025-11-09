@@ -1,7 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ArcherCard } from "@/src/component/archercard";
+import { tournaments } from "@/src/_data/tournaments";
+import TournamentFilter from "@/src/component/tournamentsFilter";
+import TournamentList from "@/src/component/tournamentsList";
 
 interface ArcherProfilePageProps {
   user: {
@@ -47,6 +51,24 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
     { text: "2x Gold Medalist" },
     { text: "More...", link: "#" },
   ];
+
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [tournamentFilter, setTournamentFilter] = useState("All");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const filteredTournaments = tournaments
+    .filter((t) =>
+      t.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    )
+    .filter((t) =>
+      tournamentFilter === "Championship" ? t.is_championship_part : true
+    );
 
   return (
     <div className="min-h-screen bg-[#E3FFE4] flex flex-col items-center py-10 px-6">
@@ -103,6 +125,24 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
           <ArcherCard title="Recent Tournaments" items={recentTournaments} />
           <ArcherCard title="Achievements" items={achievements} />
         </div>
+
+        <h2 className="text-2xl font-bold text-green-800 mb-2 text-center">
+          Tournaments
+        </h2>
+        <div className="border-b-4 border-green-600 w-48 mx-auto mb-10"></div>
+        
+        <div className="bg-white border border-green-200 shadow-md rounded-xl p-6">
+          <TournamentFilter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            tournamentFilter={tournamentFilter}
+            setTournamentFilter={setTournamentFilter}
+          />
+
+          <TournamentList tournaments={filteredTournaments} />
+        </div>
+
+
       </div>
     </div>
   );
