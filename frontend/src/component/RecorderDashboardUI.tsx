@@ -1,7 +1,7 @@
 "use client";
 
-import { FC, useState, useEffect } from "react";
-import { Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { FC, useState } from "react";
+import { Search, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
 
 export interface TournamentItem {
   competition_id: number;
@@ -33,6 +33,7 @@ interface Props {
   scores: ScoreItem[];
   onEnterTournament: (id: number) => void;
   onDisapproveScore: (id: number) => void;
+  onViewDetails: (id: number) => void; // ✅ Added
 }
 
 const RecorderDashboardUI: FC<Props> = ({
@@ -40,6 +41,7 @@ const RecorderDashboardUI: FC<Props> = ({
   scores,
   onEnterTournament,
   onDisapproveScore,
+  onViewDetails, // ✅ Added
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bowFilter, setBowFilter] = useState("All");
@@ -48,26 +50,22 @@ const RecorderDashboardUI: FC<Props> = ({
   const [expandedScore, setExpandedScore] = useState<number | null>(null);
 
   const filteredScores = (scores || [])
-  .filter((s) =>
-    s.archer?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-  .filter((s) =>
-    bowFilter === "All" ? true : s.bow_type === bowFilter
-  )
-  .filter((s) =>
-    tournamentFilter === "All" ? true : s.tournament_name === tournamentFilter
-  )
-  .filter((s) =>
-    dateFilter
-      ? new Date(s.submitted_at).toISOString().slice(0, 10) === dateFilter
-      : true
-  )
-  .sort(
-    (a, b) =>
-      new Date(b.submitted_at).getTime() -
-      new Date(a.submitted_at).getTime()
-  );
-
+    .filter((s) =>
+      s.archer?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((s) => (bowFilter === "All" ? true : s.bow_type === bowFilter))
+    .filter((s) =>
+      tournamentFilter === "All" ? true : s.tournament_name === tournamentFilter
+    )
+    .filter((s) =>
+      dateFilter
+        ? new Date(s.submitted_at).toISOString().slice(0, 10) === dateFilter
+        : true
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
+    );
 
   const bowTypes = Array.from(new Set(scores.map((s) => s.bow_type)));
   const tournamentNames = Array.from(new Set(scores.map((s) => s.tournament_name)));
@@ -146,91 +144,52 @@ const RecorderDashboardUI: FC<Props> = ({
 
           {/* Archer List */}
           <div className="divide-y">
-            {filteredScores.map((score) => (
-              <div key={score.id} className="py-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold">{score.archer}</div>
-                    <div className="text-sm text-gray-600">
-                      🏹 {score.bow_type} | 🏆 {score.tournament_name}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      Submitted: {new Date(score.submitted_at).toLocaleString()}
-                    </div>
-                  </div>
+            {filteredScores.map((score) => {
+              // ✅ Calculate total dynamically
+              const calculatedTotal =
+                score.details?.reduce(
+                  (sum, round) => sum + round.shots.reduce((a, b) => a + b, 0),
+                  0
+                ) ?? score.total_score;
 
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full font-medium ${
-                        score.status === "approved"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {score.status}
-                    </span>
+              return (
+                <div key={score.id} className="py-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold">{score.archer}</div>
+                      <div className="text-sm text-gray-600">
+                        🏹 {score.bow_type} | 🏆 {score.tournament_name}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Submitted: {new Date(score.submitted_at).toLocaleString()}
+                      </div>
+                      <div className="text-sm mt-1 font-semibold">
+                        Total Score: {calculatedTotal}
+                      </div>
+                    </div>
 
-                    <button
-                      onClick={() =>
-                        setExpandedScore(
-                          expandedScore === score.id ? null : score.id
-                        )
-                      }
-                      className="px-3 py-1 text-sm rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 flex items-center gap-1">
-                      {expandedScore === score.id ? "Hide Details" : "View Details"}
-                      {expandedScore === score.id ? (
-                        <ChevronUp size={14} />
-                      ) : (
-                        <ChevronDown size={14} />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                          score.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {score.status}
+                      </span>
+
+                      <button
+                        onClick={() => onViewDetails(score.id)} // ✅ Go to new page
+                        className="px-3 py-1 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1"
+                      >
+                        <Eye size={14} /> View Details
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Expanded details */}
-                {expandedScore === score.id && score.details && (
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="min-w-full text-sm border border-gray-200">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="px-3 py-2 border">Round</th>
-                          <th className="px-3 py-2 border">Range</th>
-                          {score.details[0].shots.map((_, i) => (
-                            <th key={i} className="px-3 py-2 border">
-                              Shot {i + 1}
-                            </th>
-                          ))}
-                          <th className="px-3 py-2 border">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {score.details.map((d, i) => (
-                          <tr key={i}>
-                            <td className="px-3 py-2 border text-center">
-                              {d.round}
-                            </td>
-                            <td className="px-3 py-2 border text-center">
-                              {d.range}
-                            </td>
-                            {d.shots.map((s, i2) => (
-                              <td
-                                key={i2}
-                                className="px-3 py-2 border text-center"
-                              >
-                                {s}
-                              </td>
-                            ))}
-                            <td className="px-3 py-2 border font-semibold text-center">
-                              {d.shots.reduce((a, b) => a + b, 0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
 
             {filteredScores.length === 0 && (
               <div className="text-center text-gray-500 py-6">

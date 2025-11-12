@@ -1,35 +1,45 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import RecorderDashboardUI, { TournamentItem, ScoreItem } from "@/src/component/RecorderDashboardUI";
+import RecorderDashboardUI, { ScoreItem } from "@/src/component/RecorderDashboardUI";
 import RecorderTournamentUI from "@/src/component/RecorderTournamentUI";
 import { tournaments } from "@/src/_data/tournaments";
-import { allScores as importedScore } from "@/src/_data/scores";
+import { allScores } from "@/src/_data/scores";
 
 export function RecorderProfilePage() {
   const [selectedTournament, setSelectedTournament] = useState<number | null>(null);
   const router = useRouter();
 
-  // ✅ Updated score data using your ScoreItem interface
-  const allScores: Record<number, ScoreItem[]> = importedScore
+  // ✅ Flatten all scores
+  const allScoreList: ScoreItem[] = Object.values(allScores).flat();
 
+  // ✅ Show only pending scores for the dashboard list
+  const pendingScores = allScoreList.filter((s) => s.status === "pending");
 
-  const history: ScoreItem[] = Object.values(allScores).flat();
-
-  // ✅ Handle tournament entry
   const handleEnterTournament = (id: number) => setSelectedTournament(id);
 
-  // ✅ Navigate to Archer Detail page
+  const handleBackToDashboard = () => setSelectedTournament(null);
+
+  const handleApprove = (id: number) => {
+    console.log("Approved score:", id);
+  };
+
+  const handleDisapprove = (id: number) => {
+    console.log("Disapproved score:", id);
+  };
+
+  // ✅ Navigate to Archer Detail Page
   const handleViewDetails = (scoreId: number) => {
     router.push(`/recorder/archer/${scoreId}`);
   };
 
-  const handleBackToDashboard = () => setSelectedTournament(null);
-
   // ✅ Tournament Page
   if (selectedTournament) {
-    const tournament = tournaments.find((t) => t.competition_id === selectedTournament);
+    const tournament = tournaments.find(
+      (t) => t.competition_id === selectedTournament
+    );
     const scores = allScores[selectedTournament] || [];
 
     return (
@@ -40,26 +50,25 @@ export function RecorderProfilePage() {
         >
           ← Back
         </button>
+
         <RecorderTournamentUI
           tournamentName={tournament?.name || "Tournament"}
-          scores={scores} // includes details
-          onApprove={(id) => console.log("Approved score:", id)}
-          onDisapprove={(id) => console.log("Disapproved score:", id)}
-          onViewDetails={handleViewDetails} // NEW
+          scores={scores}
+          onApprove={handleApprove}
+          onDisapprove={handleDisapprove}
         />
       </div>
     );
   }
 
-  // ✅ Dashboard
+  // ✅ Dashboard (only pending scores)
   return (
     <RecorderDashboardUI
       tournaments={tournaments}
-      scores={history.reverse()} // history scores
+      scores={pendingScores} // ✅ Only pending
       onEnterTournament={handleEnterTournament}
-      onDisapproveScore={(id) => console.log("Disapprove Score", id)}
-      onViewDetails={handleViewDetails} // pass to UI
+      onDisapproveScore={handleDisapprove}
+      onViewDetails={handleViewDetails}
     />
   );
 }
-
