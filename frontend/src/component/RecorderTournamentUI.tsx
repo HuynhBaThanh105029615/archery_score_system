@@ -1,148 +1,217 @@
 "use client";
 
-import { FC, useState, useMemo } from "react";
-import { Search, X } from "lucide-react";
-
-interface ArcherScore {
-  id: number;
-  archer: string;
-  score: number;
-  category: string;
-}
+import React from "react";
+import { Check, X as XIcon } from "lucide-react";
+import type { ScoreItem } from "@/src/component/RecorderDashboardUI";
 
 interface Props {
   tournamentName: string;
-  scores: ArcherScore[];
+  scores: ScoreItem[]; // full ScoreItem objects for that tournament
   onApprove: (id: number) => void;
   onDisapprove: (id: number) => void;
 }
 
-const RecorderTournamentUI: FC<Props> = ({
+export default function RecorderTournamentUI({
   tournamentName,
   scores,
   onApprove,
   onDisapprove,
-}) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
+}: Props) {
+  // Only pending scores by default (you can change if want to show approved too)
+  const pendingScores = (scores || []).filter((s) => s.status === "pending");
 
-  // ✅ Filter logic
-  const filteredScores = useMemo(() => {
-    return (scores || [])
-      .filter((s) =>
-        s.archer.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .filter((s) =>
-        categoryFilter === "All" ? true : s.category === categoryFilter
-      );
-  }, [scores, searchQuery, categoryFilter]);
+  // Determine how many rounds and max shots per round to render columns dynamically
+  const rounds = pendingScores
+    .flatMap((s) => (s.details || []).map((d) => d.round))
+    .filter((v, i, arr) => arr.indexOf(v) === i) // unique rounds
+    .sort((a, b) => a - b);
 
-  // ✅ Unique categories for dropdown
-  const categories = useMemo(() => {
-    const unique = Array.from(new Set(scores.map((s) => s.category)));
-    return ["All", ...unique];
-  }, [scores]);
+  // For each round number, compute max shots across all scores (some rounds may have different shot counts)
+  const maxShotsPerRound = new Map<number, number>();
+  rounds.forEach((r) => {
+    const maxShots = Math.max(
+      0,
+      ...pendingScores.map((s) => {
+        const d = s.details?.find((dd) => dd.round === r);
+        return d ? d.shots.length : 0;
+      })
+    );
+    maxShotsPerRound.set(r, maxShots);
+  });
+
+  // Helper to get round detail for a score
+  const getRound = (s: ScoreItem, round: number) =>
+    s.details?.find((d) => d.round === round) ?? null;
 
   return (
-    <main className="min-h-screen flex flex-col items-center py-10">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-8 space-y-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          🏹 {tournamentName}
-        </h1>
-
-        {/* ✅ Filters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Search bar */}
-          <div className="relative w-full md:w-1/2">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search archer..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-              >
-                <X size={16} />
-              </button>
-            )}
+    <main className="min-h-screen bg-gray-50 text-gray-900 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">🏆 {tournamentName}</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Pending submissions:{" "}
+              <span className="font-semibold text-yellow-600">
+                {pendingScores.length}
+              </span>
+            </p>
           </div>
+        </header>
 
-          {/* Category filter */}
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="py-2 px-3 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500"
-          >
-            {categories.map((cat) => (
-              <option key={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* ✅ Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+        <section className="bg-white rounded-lg shadow-sm overflow-x-auto">
+          <table className="min-w-full table-auto">
+            {/* Top header: fixed columns + one group per round + total + status + actions */}
             <thead>
-              <tr className="bg-gray-100 text-gray-700 text-sm uppercase">
-                <th className="py-3 px-4 text-left font-medium">Archer</th>
-                <th className="py-3 px-4 text-left font-medium">Score</th>
-                <th className="py-3 px-4 text-left font-medium">Category</th>
-                <th className="py-3 px-4 text-center font-medium">Actions</th>
+              <tr className="bg-gray-100 text-sm text-gray-700">
+                <th className="px-3 py-2 border text-left">Archer</th>
+                <th className="px-3 py-2 border text-left">Bow</th>
+                <th className="px-3 py-2 border text-left">Submitted</th>
+
+                {/* For each round: create a colspan = maxShots + 2 (Range + Round Total) */}
+                {rounds.map((r) => {
+                  const maxShots = maxShotsPerRound.get(r) || 0;
+                  const colspan = maxShots + 2; // Range + shots + Round Total
+                  return (
+                    <th
+                      key={r}
+                      className="px-3 py-2 border text-center"
+                      colSpan={colspan}
+                    >
+                      Round {r}
+                    </th>
+                  );
+                })}
+
+                <th className="px-3 py-2 border text-center">Total</th>
+                <th className="px-3 py-2 border text-center">Status</th>
+                <th className="px-3 py-2 border text-center">Actions</th>
+              </tr>
+
+              {/* Sub-header: for each round, show Range | Shot1..ShotN | Round Total */}
+              <tr className="bg-gray-50 text-xs text-gray-600">
+                {/* placeholders for first 3 fixed columns */}
+                <th className="px-3 py-2 border"></th>
+                <th className="px-3 py-2 border"></th>
+                <th className="px-3 py-2 border"></th>
+
+                {rounds.map((r) => {
+                  const maxShots = maxShotsPerRound.get(r) || 0;
+                  return (
+                    <React.Fragment key={`sub-${r}`}>
+                      <th className="px-2 py-2 border text-center">Range</th>
+                      {Array.from({ length: maxShots }).map((_, i) => (
+                        <th key={`r${r}-s${i}`} className="px-2 py-2 border text-center">
+                          S{i + 1}
+                        </th>
+                      ))}
+                      <th className="px-2 py-2 border text-center">Round Total</th>
+                    </React.Fragment>
+                  );
+                })}
+
+                <th className="px-3 py-2 border"></th>
+                <th className="px-3 py-2 border"></th>
+                <th className="px-3 py-2 border"></th>
               </tr>
             </thead>
-            <tbody>
-              {filteredScores.length > 0 ? (
-                filteredScores.map((s, index) => (
-                  <tr
-                    key={s.id}
-                    className={`border-t ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } hover:bg-blue-50 transition`}
-                  >
-                    <td className="py-3 px-4 font-medium text-gray-800">
-                      {s.archer}
+
+            <tbody className="text-sm">
+              {pendingScores.map((s) => {
+                // compute per-round totals and grand total
+                const roundTotals = (s.details || []).reduce<Record<number, number>>(
+                  (acc, d) => {
+                    acc[d.round] = d.shots.reduce((a, b) => a + b, 0);
+                    return acc;
+                  },
+                  {}
+                );
+                const grandTotal = Object.values(roundTotals).reduce((a, b) => a + b, 0) || s.total_score || 0;
+
+                return (
+                  <tr key={s.id} className="odd:bg-white even:bg-gray-50">
+                    <td className="px-3 py-3 border">
+                      <div className="font-medium">{s.archer}</div>
+                      <div className="text-xs text-gray-500">{s.tournament_name}</div>
                     </td>
-                    <td className="py-3 px-4 text-gray-700">{s.score}</td>
-                    <td className="py-3 px-4 text-gray-700">{s.category}</td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex justify-center gap-3">
-                        <button
-                          onClick={() => onApprove(s.id)}
-                          className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition active:scale-95"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => onDisapprove(s.id)}
-                          className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition active:scale-95"
-                        >
-                          Disapprove
-                        </button>
-                      </div>
+
+                    <td className="px-3 py-3 border">{s.bow_type}</td>
+
+                    <td className="px-3 py-3 border text-xs text-gray-500">
+                      {new Date(s.submitted_at).toLocaleString()}
+                    </td>
+
+                    {rounds.map((r) => {
+                      const rd = getRound(s, r);
+                      const maxShots = maxShotsPerRound.get(r) || 0;
+
+                      return (
+                        <React.Fragment key={`row-${s.id}-r${r}`}>
+                          <td className="px-2 py-2 border text-center text-xs">
+                            {rd ? rd.range : "-"}
+                          </td>
+
+                          {/* show each shot or blank if not provided */}
+                          {Array.from({ length: maxShots }).map((_, i) => (
+                            <td key={`row-${s.id}-r${r}-s${i}`} className="px-2 py-2 border text-center">
+                              {rd && rd.shots[i] !== undefined ? rd.shots[i] : "-"}
+                            </td>
+                          ))}
+
+                          <td className="px-2 py-2 border text-center font-semibold">
+                            {rd ? rd.shots.reduce((a, b) => a + b, 0) : "-"}
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+
+                    <td className="px-3 py-3 border text-center font-semibold">{grandTotal}</td>
+
+                    <td className="px-3 py-3 border text-center">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          s.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {s.status}
+                      </span>
+                    </td>
+
+                    <td className="px-3 py-3 border text-center space-x-2">
+                      <button
+                        onClick={() => onApprove(s.id)}
+                        className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
+                        title="Approve"
+                      >
+                        <Check size={16} />
+                        Approve
+                      </button>
+
+                      <button
+                        onClick={() => onDisapprove(s.id)}
+                        className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-md border border-red-400 text-red-600 hover:bg-red-50"
+                        title="Disapprove"
+                      >
+                        <XIcon size={16} />
+                        Disapprove
+                      </button>
                     </td>
                   </tr>
-                ))
-              ) : (
+                );
+              })}
+
+              {pendingScores.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="text-center py-8 text-gray-500 italic"
-                  >
-                    No matching archers found.
+                  <td colSpan={3 + rounds.reduce((acc, r) => acc + (maxShotsPerRound.get(r) || 0) + 2, 0) + 3} className="px-4 py-8 text-center text-gray-500">
+                    No pending submissions for this tournament.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-        </div>
+        </section>
       </div>
     </main>
   );
-};
-
-export default RecorderTournamentUI;
+}
