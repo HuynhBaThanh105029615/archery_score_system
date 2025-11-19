@@ -1,13 +1,10 @@
-from supabase import create_client
+from services.db_adapter import DBAdapter
 from app.config import settings
 
-_supabase_client = None
+_db = None
 
 def get_db():
-    """
-    Return Supabase client instance (singleton)
-    """
-    global _supabase_client
-    if _supabase_client is None:
-        _supabase_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-    return _supabase_client
+    global _db
+    if _db is None:
+        _db = DBAdapter(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+    return _db

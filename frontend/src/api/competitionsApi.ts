@@ -2,18 +2,18 @@ import api from "./axios";
 import type { Competition } from "./types";
 
 export const competitionsApi = {
-  list: async (params?: { limit?: number; offset?: number } ): Promise<Competition[]> =>
-    (await api.get<Competition[]>("/api/v1/competitions", { params })).data,
+  list: async (params?: { limit?: number; offset?: number }): Promise<Competition[]> =>
+    (await api.get<Competition[]>("/competitions/", { params })).data,  // FIXED: trailing slash
 
   get: async (id: number): Promise<Competition> =>
-    (await api.get<Competition>(`/api/v1/competitions/${id}`)).data,
+    (await api.get<Competition>(`/competitions/${id}`)).data,
 
   create: async (payload: Partial<Competition>): Promise<Competition> =>
-    (await api.post<Competition>("/api/v1/competitions", payload)).data,
+    (await api.post<Competition>("/competitions/", payload)).data,     // FIXED
 
   update: async (id: number, payload: Partial<Competition>) =>
-    api.put(`/api/v1/competitions/${id}`, payload),
+    api.put(`/competitions/${id}`, payload),
 
   remove: async (id: number) =>
-    api.delete(`/api/v1/competitions/${id}`),
+    api.delete(`/competitions/${id}`),
 };

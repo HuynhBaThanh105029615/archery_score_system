@@ -30,11 +30,11 @@ export default function Home() {
 
         <InfoCard
           image="/info.jpg"
-          alt="Tournaments"
-          title="Tournaments"
-          description="The recent tournaments that are happening right now"
-          buttonText="Recent Tournaments"
-          href="/tournaments"
+          alt="Competitions"
+          title="Competitions"
+          description="The recent Competitions that are happening right now"
+          buttonText="Recent Competitions"
+          href="/competitions"
         />
 
         <InfoCard

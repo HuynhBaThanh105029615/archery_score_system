@@ -1,4 +1,4 @@
-import { getUser } from "../../../_lib/auth";
+import { getUser } from "@/src/app/_lib/auth";
 import { ArcherProfilePage } from "./ArcherProfilePage";
 import { RecorderProfilePage } from "./RecorderProfilePage";
 import { ManagerProfilePage } from "./ManagerProfilePage";
@@ -16,7 +16,7 @@ export default async function ProfilePage() {
     case "manager":
       return <ManagerProfilePage user={user} />;
     case "recorder":
-      return <RecorderProfilePage />;
+      return <RecorderProfilePage user={user} />;
     // case "admin":
     //   return <AdminProfilePage user={user} />;
     default:

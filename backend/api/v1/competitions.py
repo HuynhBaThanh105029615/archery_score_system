@@ -8,11 +8,9 @@ from core.auth import get_current_user, CurrentUser
 
 from services.repo_adapter import RepoAdapter
 
-from db.repositories import (
-    competition as competition_repo,
-    competition_round as comp_round_repo,
-    round as round_repo,
-)
+from db.repositories.competition import competition_repo
+from db.repositories.competition_round import competition_round_repo as comp_round_repo
+
 
 router = APIRouter()
 

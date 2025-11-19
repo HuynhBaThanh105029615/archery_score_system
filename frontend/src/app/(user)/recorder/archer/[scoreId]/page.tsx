@@ -1,30 +1,74 @@
+//frontend\src\app\(user)\recorder\archer\[scoreId]\page.tsx
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { allScores } from "@/src/_data/scores";
-import { ScoreItem } from "@/src/component/RecorderDashboardUI";
+import { useEffect, useState } from "react";
+import { scoresApi } from "@/src/api/scoresApi";
 
 export default function ArcherDetailPage() {
   const params = useParams();
   const router = useRouter();
   const scoreId = Number(params.scoreId);
 
-  const allScoreList: ScoreItem[] = Object.values(allScores).flat();
-  const score = allScoreList.find((s) => s.id === scoreId);
+  const [loading, setLoading] = useState(true);
+  const [score, setScore] = useState<any>(null);
+  const [error, setError] = useState("");
 
-  if (!score) return <div className="p-6 text-center">Score not found</div>;
+  // -----------------------------
+  // FETCH SCORE FROM API
+  // -----------------------------
+  useEffect(() => {
+    async function loadScore() {
+      try {
+        const data = await scoresApi.get(scoreId); // <---- your API
+        setScore(data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load score from server");
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const handleApprove = () => {
-    console.log("✅ Approved score:", score.id);
+    loadScore();
+  }, [scoreId]);
+
+  // -----------------------------
+  // APPROVE / REJECT
+  // -----------------------------
+  const handleApprove = async () => {
+    try {
+      await scoresApi.approve(scoreId);  // <---- your API
+      router.push("/recorder");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to approve score");
+    }
   };
 
-  const handleDisapprove = () => {
-    console.log("❌ Disapproved score:", score.id);
+  const handleReject = async () => {
+    try {
+      await scoresApi.reject(scoreId);  // <---- your API
+      router.push("/recorder");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to reject score");
+    }
   };
 
+  // -----------------------------
+  // LOADING / ERROR
+  // -----------------------------
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (error) return <div className="p-6 text-center">{error}</div>;
+  if (!score) return <div className="p-6 text-center">Score not found.</div>;
+
+  // -----------------------------
+  // CALCULATE TOTAL SCORE
+  // -----------------------------
   const totalScore =
-    score.details?.reduce(
-      (sum, round) => sum + round.shots.reduce((a, b) => a + b, 0),
+    score.lines?.reduce(
+      (sum: number, line: any) => sum + Number(line.arrow_score),
       0
     ) ?? score.total_score;
 
@@ -38,50 +82,42 @@ export default function ArcherDetailPage() {
       </button>
 
       <h2 className="text-2xl font-bold mb-2">
-        {score.archer} - {score.bow_type}
+        {score.archer_name} – {score.bow_type}
       </h2>
-      <p className="text-gray-600 mb-1">
-        Tournament: <span className="font-medium">{score.tournament_name}</span>
-      </p>
-      <p className="text-gray-600 mb-1">
-        Submitted at: {new Date(score.submitted_at).toLocaleString()}
-      </p>
-      <p className="text-gray-800 mt-2 font-semibold">Total Score: {totalScore}</p>
 
-      {score.details && (
-        <div className="overflow-x-auto my-6">
-          <table className="min-w-full border border-gray-200">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-3 py-2 border">Round</th>
-                <th className="px-3 py-2 border">Range</th>
-                {score.details[0].shots.map((_, i) => (
-                  <th key={i} className="px-3 py-2 border">
-                    Shot {i + 1}
-                  </th>
-                ))}
-                <th className="px-3 py-2 border">Round Total</th>
+      <p className="text-gray-600 mb-1">
+        Competition:{" "}
+        <span className="font-medium">{score.competition_name}</span>
+      </p>
+
+      <p className="text-gray-800 mt-2 font-semibold">
+        Total Score: {totalScore}
+      </p>
+
+      <div className="overflow-x-auto my-6">
+        <table className="min-w-full border border-gray-200">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-3 py-2 border">End</th>
+              <th className="px-3 py-2 border">Arrow</th>
+              <th className="px-3 py-2 border">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {score.lines?.map((line: any, i: number) => (
+              <tr key={i}>
+                <td className="px-3 py-2 border text-center">{line.end_id}</td>
+                <td className="px-3 py-2 border text-center">
+                  {line.arrow_number}
+                </td>
+                <td className="px-3 py-2 border text-center">
+                  {line.arrow_score}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {score.details.map((d, i) => (
-                <tr key={i}>
-                  <td className="px-3 py-2 border text-center">{d.round}</td>
-                  <td className="px-3 py-2 border text-center">{d.range}</td>
-                  {d.shots.map((s, j) => (
-                    <td key={j} className="px-3 py-2 border text-center">
-                      {s}
-                    </td>
-                  ))}
-                  <td className="px-3 py-2 border text-center font-semibold">
-                    {d.shots.reduce((a, b) => a + b, 0)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="flex gap-4">
         <button
@@ -90,11 +126,12 @@ export default function ArcherDetailPage() {
         >
           Approve
         </button>
+
         <button
-          onClick={handleDisapprove}
+          onClick={handleReject}
           className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
         >
-          Disapprove
+          Reject
         </button>
       </div>
     </div>

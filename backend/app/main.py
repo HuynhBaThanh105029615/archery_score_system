@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.logging import setup_logging
 from app.config import settings
 
-# Import all routers
+# Import routers
 from api.v1 import (
     auth_router,
     entries_router,
@@ -30,7 +31,36 @@ app = FastAPI(
     openapi_tags=[]
 )
 
-# Custom OpenAPI to inject JWT scheme
+# ------------------------------
+# ⭐ ENABLE CORS (Fixes 405 & token sending)
+# ------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],      # ⭐ Includes OPTIONS
+    allow_headers=["*"],      # ⭐ Allows Authorization
+)
+
+
+# ------------------------------
+# ⭐ OPTIONAL Security Headers
+# ------------------------------
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
+
+
+# ------------------------------
+# ⭐ Custom OpenAPI for JWT scheme
+# ------------------------------
 app.openapi_schema = None
 
 def custom_openapi():
@@ -52,16 +82,16 @@ def custom_openapi():
         }
     }
 
-    # apply global auth
     openapi_schema["security"] = [{"BearerAuth": []}]
-
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 app.openapi = custom_openapi
 
 
-# Register ALL routers
+# ------------------------------
+# ⭐ Include all routers
+# ------------------------------
 app.include_router(auth_router,          prefix="/api/v1/auth",           tags=["Auth"])
 app.include_router(archers_router,       prefix="/api/v1/archers",        tags=["Archers"])
 app.include_router(class_router,         prefix="/api/v1/classes",        tags=["Classes"])
@@ -82,7 +112,9 @@ app.include_router(export_router,        prefix="/api/v1/export",         tags=[
 app.include_router(audit_router,         prefix="/api/v1/audit",          tags=["Audit Logs"])
 
 
-# Health check
+# ------------------------------
+# Health Check
+# ------------------------------
 @app.get("/health")
 async def health():
     return {"status": "ok"}

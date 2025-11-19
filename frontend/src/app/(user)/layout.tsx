@@ -1,4 +1,5 @@
-import { getUser } from "../_lib/auth"
+//frontend\src\app\(user)\layout.tsx
+import { getUser } from "@/src/app/_lib/auth";
 import { UserHeader } from "@/src/component/userheader";
 import { Header } from "../../component/header";
 import "../global.css";

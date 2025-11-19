@@ -1,46 +1,31 @@
-/*action.ts */
-/*Not used for now as it's the backend job*/
+// /src/app/(auth)/login/actions.ts
+"use server";
 
-// "use server";
+import { cookies } from "next/headers";
+import { supabase } from "../../_lib/supabaseClient";
 
-// import { z } from "zod";
-// import { createSession } from "../_lib/session";
-// import { redirect } from "next/navigation";
+type LoginPayload = {
+  email: string;
+  password: string;
+};
 
-// const testUser = {
-//     id: '1',
-//     email: "testing@site.com",
-//     password: "12345678"
-// };
+export async function loginAction({ email, password }: LoginPayload) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-// const loginSchema = z.object({
-//     email: z.email({ message: "Invalid email address" }).trim(),
-//     password: z
-//         .string()
-//         .min(8, {message: "Your password it too small!"})
-//         .trim(),
-// });
+  if (error) return { error: error.message };
 
-// export async function login(prevState: any, formData: FormData) {
-//     const result = loginSchema.safeParse(Object.fromEntries(formData));
+  const user = data.user;
+  const token = data.session?.access_token;
 
-//     if (!result.success) {
-//         return { errors: result.error.flatten().fieldErrors };
-//     }
+  const role = user?.user_metadata?.role ?? "archer";
 
-//     const {email, password} = result.data;
+  const cookieStore = cookies();
+  cookieStore.set("access_token", token || "", { path: "/" });
+  cookieStore.set("user_id", user?.id || "", { path: "/" });
+  cookieStore.set("role", role, { path: "/" });
 
-//     if (email !== testUser.email || password !== testUser.password) {
-//         return {
-//             errors: {
-//                 email: ["Invalid email or password"],
-//             }
-//         }
-//     }
-
-//     await createSession(testUser.id);
-
-//     redirect("/Profile");
-// }
-
-// export async function logout() {}
+  return { token, role };
+}

@@ -1,31 +1,33 @@
-/*middleware.ts */
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-//Not used now.
+export function middleware(req: NextRequest) {
+  const role = req.cookies.get("role")?.value;
+  const path = req.nextUrl.pathname;
 
-// import { NextRequest, NextResponse } from "next/server";
-// import { decrypt } from "./_lib/session";
+  // Not logged in?
+  if (!role) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
-// const protectedRoutes = ["/Profile"];
-// const publicRoutes = ["/Login"];
+  // Admin has full access
+  if (role === "admin") {
+    return NextResponse.next();
+  }
 
-// export default async function middleware(req: NextRequest) {
-//   const path = req.nextUrl.pathname;
-//   const isProtectedRoute = protectedRoutes.includes(path);
-//   const isPublicRoute = publicRoutes.includes(path);
+  // Recorder-only section
+  if (path.startsWith("/recorder") && role !== "recorder") {
+    return NextResponse.redirect(new URL("/403", req.url));
+  }
 
-//   const cookie = req.cookies.get("session")?.value;
-//   const session = await decrypt(cookie);
+  // Archer-only section
+  if (path.startsWith("/archer") && role !== "archer") {
+    return NextResponse.redirect(new URL("/403", req.url));
+  }
 
-//   // 🚪 Case 1: No session but trying to access protected route
-//   if (isProtectedRoute && !session?.userId) {
-//     return NextResponse.redirect(new URL("/Login", req.url));
-//   }
+  return NextResponse.next();
+}
 
-//   // 🚪 Case 2: Logged in but trying to access public route (like /Login)
-//   if (isPublicRoute && session?.userId) {
-//     return NextResponse.redirect(new URL("/Profile", req.url));
-//   }
-
-//   // ✅ Case 3: All other routes (allowed)
-//   return NextResponse.next();
-// }
+export const config = {
+  matcher: ["/admin/:path*", "/recorder/:path*", "/archer/:path*"],
+};

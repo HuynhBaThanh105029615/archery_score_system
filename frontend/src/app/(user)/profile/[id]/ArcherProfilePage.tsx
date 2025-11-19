@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+
+import { archersApi, divisionApi, scoresApi, competitionsApi } from "@/src/api";
 import { ArcherCard } from "@/src/component/archercard";
-import { tournaments } from "@/src/_data/tournaments";
-import TournamentFilter from "@/src/component/CompetitionFilter";
-import TournamentList from "@/src/component/CompetitionList";
+import CompetitionFilter from "@/src/component/CompetitionFilter";
+import CompetitionList from "@/src/component/CompetitionList";
 
 interface ArcherProfilePageProps {
   user: {
@@ -16,52 +17,92 @@ interface ArcherProfilePageProps {
 }
 
 export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
-  const { archerId } = useParams();
+  const { id } = useParams(); // archer_id from route
 
-  // Simulated data — later you can fetch this from API
-  const archer = {
-    fullName: user?.name || "Alice Nguyen",
-    category: "Female Open Compound",
-    dob: "1997-05-21",
-    memberSince: "2022",
-    club: "Melbourne Archery Club",
-    photo: "/placeholder.jpg",
-  };
-
-  const bestScores = [
-    { text: "1 score" },
-    { text: "2 score" },
-    { text: "3 score" },
-    { text: "4 score" },
-    { text: "5 score", link: "#" },
-  ];
-
-  const recentTournaments = [
-    { text: "1 score" },
-    { text: "2 score" },
-    { text: "3 score" },
-    { text: "4 score" },
-    { text: "5 score", link: "#" },
-  ];
-
-  const achievements = [
-    { text: "2023 Regional Champion" },
-    { text: "Top 10 Nationals" },
-    { text: "Best Compound Archer" },
-    { text: "2x Gold Medalist" },
-    { text: "More...", link: "#" },
-  ];
-
+  const [archer, setArcher] = useState<any>(null);
+  const [divisionName, setDivisionName] = useState<string>("Unknown");
+  const [scores, setScores] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<any[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [tournamentFilter, setTournamentFilter] = useState("All");
 
+  // ---------------------------------------------------
+  // DEBOUNCE SEARCH
+  // ---------------------------------------------------
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // ---------------------------------------------------
+  // LOAD ALL ARCHER DATA FROM API
+  // ---------------------------------------------------
+  useEffect(() => {
+    async function loadAll() {
+      try {
+        // 1) Load archer profile
+        const archerData = await archersApi.get(Number(id));
+        setArcher(archerData);
+
+        // 2) Load division (bow type)
+        if (archerData.default_division_id) {
+          const division = await divisionApi.get(archerData.default_division_id);
+          setDivisionName(division.name);
+        }
+
+        // 3) Load archer scores
+        const scoreData = await scoresApi.list({ archer_id: archerData.archer_id });
+        setScores(scoreData);
+
+        // 4) Load tournaments (competitions)
+        const compData = await competitionsApi.list();
+        setTournaments(compData);
+      } catch (err) {
+        console.error("Failed loading archer page:", err);
+      }
+    }
+
+    loadAll();
+  }, [id]);
+
+  if (!archer) {
+    return <div className="p-10 text-center">Loading...</div>;
+  }
+
+  // ---------------------------------------------------
+  // BEST SCORES (Top 5)
+  // ---------------------------------------------------
+  const bestScores = [...scores]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5)
+    .map((s) => ({
+      text: `${s.total} points – ${s.date || s.created_at}`,
+    }));
+
+  // ---------------------------------------------------
+  // RECENT TOURNAMENTS
+  // ---------------------------------------------------
+  const recentTournaments = scores
+    .slice(0, 5)
+    .map((s) => ({
+      text: `${s.total} points – Competition #${s.competition_id}`,
+    }));
+
+  // ---------------------------------------------------
+  // ACHIEVEMENTS (Auto-generated placeholders)
+  // ---------------------------------------------------
+  const achievements = [
+    { text: `Highest score: ${bestScores[0]?.text || "N/A"}` },
+    { text: `Total competitions: ${scores.length}` },
+    { text: `Active since ${archer.created_at?.slice(0, 4)}` },
+    { text: "More achievements coming soon..." },
+  ];
+
+  // ---------------------------------------------------
+  // FILTER TOURNAMENT LIST
+  // ---------------------------------------------------
   const filteredTournaments = tournaments
     .filter((t) =>
       t.name.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -83,26 +124,26 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
           <div className="flex-1 space-y-3 text-gray-800">
             <p>
               <span className="font-semibold text-green-700">Full Name:</span>{" "}
-              {archer.fullName}
+              {archer.name}
             </p>
+
             <p>
-              <span className="font-semibold text-green-700">Category:</span>{" "}
-              {archer.category}
+              <span className="font-semibold text-green-700">Bow Type:</span>{" "}
+              {divisionName}
             </p>
+
             <p>
               <span className="font-semibold text-green-700">Date of Birth:</span>{" "}
-              {archer.dob}
+              {archer.date_of_birth || "N/A"}
             </p>
+
             <p>
               <span className="font-semibold text-green-700">Member Since:</span>{" "}
-              {archer.memberSince}
+              {archer.created_at?.slice(0, 4) || "N/A"}
             </p>
-            <p>
-              <span className="font-semibold text-green-700">Club:</span>{" "}
-              {archer.club}
-            </p>
+
             <p className="text-sm text-gray-500 italic">
-              Archer ID: {archerId}
+              Archer ID: {archer.archer_id}
             </p>
           </div>
 
@@ -113,7 +154,7 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
         </div>
       </div>
 
-      {/* Personal Performance Section */}
+      {/* Personal Performance */}
       <div className="w-full max-w-5xl">
         <h2 className="text-2xl font-bold text-green-800 mb-2 text-center">
           Personal Performance
@@ -126,23 +167,22 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
           <ArcherCard title="Achievements" items={achievements} />
         </div>
 
-        <h2 className="text-2xl font-bold text-green-800 mb-2 text-center">
+        {/* Tournaments */}
+        <h2 className="text-2xl font-bold text-green-800 mb-2 text-center mt-12">
           Tournaments
         </h2>
         <div className="border-b-4 border-green-600 w-48 mx-auto mb-10"></div>
-        
+
         <div className="bg-white border border-green-200 shadow-md rounded-xl p-6">
-          <TournamentFilter
+          <CompetitionFilter
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            tournamentFilter={tournamentFilter}
-            setTournamentFilter={setTournamentFilter}
+            competitionFilter={tournamentFilter}
+            setCompetitionFilter={setTournamentFilter}
           />
 
-          <TournamentList tournaments={filteredTournaments} />
+          <CompetitionList competitions={filteredTournaments} />
         </div>
-
-
       </div>
     </div>
   );

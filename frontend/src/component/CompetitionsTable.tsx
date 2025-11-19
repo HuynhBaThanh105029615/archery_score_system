@@ -11,7 +11,7 @@ export const CompetitionsTable = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await competitionsApi.list(); // backend request
+        const data = await competitionsApi.list();
         setCompetitions(data);
       } catch (err) {
         console.error("Failed to load competitions:", err);
@@ -33,7 +33,9 @@ export const CompetitionsTable = () => {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100">
-      <h2 className="text-xl font-semibold mb-4 text-green-700">Competitions</h2>
+      <h2 className="text-xl font-semibold mb-4 text-green-700">
+        Competitions
+      </h2>
 
       <table className="min-w-full border-collapse text-sm">
         <thead>

@@ -22,10 +22,13 @@ export default function CompetitionsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterValue, setFilterValue] = useState("All");
 
+  // -------------------------------
+  // LOAD COMPETITIONS (CLIENT ONLY)
+  // -------------------------------
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await competitionsApi.list();
+        const data = await competitionsApi.list(); // axios GET /competitions
 
         const mapped: CompetitionItem[] = data.map((c) => ({
           id: c.competition_id ?? 0,
@@ -47,11 +50,13 @@ export default function CompetitionsPage() {
     load();
   }, []);
 
+  // Debounce search
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
+  // FILTER LIST
   const filtered = items
     .filter((c) =>
       c.name.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -68,14 +73,15 @@ export default function CompetitionsPage() {
         <CompetitionFilter
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          tournamentFilter={filterValue}
-          setTournamentFilter={setFilterValue}
+          competitionFilter={filterValue}         // ✔ correct prop name
+          setCompetitionFilter={setFilterValue}   // ✔ correct prop name
         />
+
 
         {loading ? (
           <p className="text-gray-500">Loading competitions...</p>
         ) : (
-          <CompetitionList tournaments={filtered} />
+          <CompetitionList competitions={filtered} /> // 🟢 FIXED prop name
         )}
       </div>
     </main>

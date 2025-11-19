@@ -1,4 +1,4 @@
-import { getUser } from "../../_lib/auth";
+import { getUser } from "@/src/app/_lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
