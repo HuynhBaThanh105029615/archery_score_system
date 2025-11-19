@@ -1,23 +1,23 @@
 "use client";
 
 import { FC, useState } from "react";
-import { Search, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Search, X, Eye } from "lucide-react";
 
-export interface TournamentItem {
+export interface CompetitionItem {
   competition_id: number;
   name: string;
   date: string;
-  location: string;
+  location: string | null;
   is_championship_part: boolean;
-  created_by: string;
+  created_by: number | null;
 }
 
 export interface ScoreItem {
   id: number;
   archer: string;
   bow_type: string;
-  tournament_id: number;
-  tournament_name: string;
+  competition_id: number;
+  competition_name: string;
   submitted_at: string;
   total_score: number;
   status: "pending" | "approved";
@@ -29,25 +29,24 @@ export interface ScoreItem {
 }
 
 interface Props {
-  tournaments: TournamentItem[];
+  competitions: CompetitionItem[];
   scores: ScoreItem[];
-  onEnterTournament: (id: number) => void;
+  onEnterCompetition: (id: number) => void;
   onDisapproveScore: (id: number) => void;
-  onViewDetails: (id: number) => void; // ✅ Added
+  onViewDetails: (id: number) => void;
 }
 
-const RecorderDashboardUI: FC<Props> = ({
-  tournaments,
+const CompetitionsDashboardUI: FC<Props> = ({
+  competitions,
   scores,
-  onEnterTournament,
+  onEnterCompetition,
   onDisapproveScore,
-  onViewDetails, // ✅ Added
+  onViewDetails,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bowFilter, setBowFilter] = useState("All");
-  const [tournamentFilter, setTournamentFilter] = useState("All");
+  const [competitionFilter, setCompetitionFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
-  const [expandedScore, setExpandedScore] = useState<number | null>(null);
 
   const filteredScores = (scores || [])
     .filter((s) =>
@@ -55,7 +54,9 @@ const RecorderDashboardUI: FC<Props> = ({
     )
     .filter((s) => (bowFilter === "All" ? true : s.bow_type === bowFilter))
     .filter((s) =>
-      tournamentFilter === "All" ? true : s.tournament_name === tournamentFilter
+      competitionFilter === "All"
+        ? true
+        : s.competition_name === competitionFilter
     )
     .filter((s) =>
       dateFilter
@@ -64,15 +65,19 @@ const RecorderDashboardUI: FC<Props> = ({
     )
     .sort(
       (a, b) =>
-        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
+        new Date(b.submitted_at).getTime() -
+        new Date(a.submitted_at).getTime()
     );
 
   const bowTypes = Array.from(new Set(scores.map((s) => s.bow_type)));
-  const tournamentNames = Array.from(new Set(scores.map((s) => s.tournament_name)));
+  const competitionNames = Array.from(
+    new Set(scores.map((s) => s.competition_name))
+  );
 
   return (
     <main className="min-h-screen text-gray-900">
       <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
         <section>
           <h2 className="text-3xl font-semibold">Welcome back 🎯</h2>
           <p className="text-sm text-gray-600 mt-2">
@@ -82,9 +87,9 @@ const RecorderDashboardUI: FC<Props> = ({
             </span>{" "}
             pending scores across{" "}
             <span className="font-medium text-green-600">
-              {tournaments.length}
+              {competitions.length}
             </span>{" "}
-            tournaments.
+            competitions.
           </p>
         </section>
 
@@ -93,6 +98,7 @@ const RecorderDashboardUI: FC<Props> = ({
           <h3 className="text-xl font-bold">📋 Archer Submissions</h3>
 
           <div className="flex flex-wrap gap-3 items-center">
+            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
               <input
@@ -112,6 +118,7 @@ const RecorderDashboardUI: FC<Props> = ({
               )}
             </div>
 
+            {/* Bow filter */}
             <select
               value={bowFilter}
               onChange={(e) => setBowFilter(e.target.value)}
@@ -123,17 +130,19 @@ const RecorderDashboardUI: FC<Props> = ({
               ))}
             </select>
 
+            {/* Competition filter */}
             <select
-              value={tournamentFilter}
-              onChange={(e) => setTournamentFilter(e.target.value)}
+              value={competitionFilter}
+              onChange={(e) => setCompetitionFilter(e.target.value)}
               className="px-3 py-2 text-sm border rounded-md"
             >
-              <option value="All">All Tournaments</option>
-              {tournamentNames.map((t) => (
+              <option value="All">All Competitions</option>
+              {competitionNames.map((t) => (
                 <option key={t}>{t}</option>
               ))}
             </select>
 
+            {/* Date filter */}
             <input
               type="date"
               value={dateFilter}
@@ -142,13 +151,13 @@ const RecorderDashboardUI: FC<Props> = ({
             />
           </div>
 
-          {/* Archer List */}
+          {/* Score list */}
           <div className="divide-y">
             {filteredScores.map((score) => {
-              // ✅ Calculate total dynamically
               const calculatedTotal =
                 score.details?.reduce(
-                  (sum, round) => sum + round.shots.reduce((a, b) => a + b, 0),
+                  (sum, round) =>
+                    sum + round.shots.reduce((a, b) => a + b, 0),
                   0
                 ) ?? score.total_score;
 
@@ -158,10 +167,11 @@ const RecorderDashboardUI: FC<Props> = ({
                     <div>
                       <div className="font-semibold">{score.archer}</div>
                       <div className="text-sm text-gray-600">
-                        🏹 {score.bow_type} | 🏆 {score.tournament_name}
+                        🏹 {score.bow_type} | 🏆 {score.competition_name}
                       </div>
                       <div className="text-xs text-gray-400">
-                        Submitted: {new Date(score.submitted_at).toLocaleString()}
+                        Submitted:{" "}
+                        {new Date(score.submitted_at).toLocaleString()}
                       </div>
                       <div className="text-sm mt-1 font-semibold">
                         Total Score: {calculatedTotal}
@@ -180,7 +190,7 @@ const RecorderDashboardUI: FC<Props> = ({
                       </span>
 
                       <button
-                        onClick={() => onViewDetails(score.id)} // ✅ Go to new page
+                        onClick={() => onViewDetails(score.id)}
                         className="px-3 py-1 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1"
                       >
                         <Eye size={14} /> View Details
@@ -203,4 +213,4 @@ const RecorderDashboardUI: FC<Props> = ({
   );
 };
 
-export default RecorderDashboardUI;
+export default CompetitionsDashboardUI;

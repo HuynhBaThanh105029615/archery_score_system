@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Clock } from "lucide-react";
 import { ManagerUserTable } from "@/src/component/ManagerUserTable";
-import { CompetitionsTable } from "@/src/component/CompetitionTable";
+import { CompetitionsTable } from "@/src/component/CompetitionsTable";
 import { HistoryTable } from "@/src/component/HistoryTable";
 
 export const ManagerProfilePage = ({ user }: { user: { id: number; name: string; role: string } }) => {

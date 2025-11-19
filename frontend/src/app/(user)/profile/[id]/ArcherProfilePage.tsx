@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ArcherCard } from "@/src/component/archercard";
 import { tournaments } from "@/src/_data/tournaments";
-import TournamentFilter from "@/src/component/tournamentsFilter";
-import TournamentList from "@/src/component/tournamentsList";
+import TournamentFilter from "@/src/component/CompetitionFilter";
+import TournamentList from "@/src/component/CompetitionList";
 
 interface ArcherProfilePageProps {
   user: {

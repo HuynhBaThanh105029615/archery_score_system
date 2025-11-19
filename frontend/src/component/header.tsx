@@ -8,12 +8,12 @@ export function Header() {
       className="flex items-center justify-between bg-green-500 text-black px-8 py-4 shadow-md"
     >
       {/* Logo / App name */}
-      <h1 className="text-lg font-semibold">ArcheryScoreHub</h1>
+      <h1 className="text-lg font-semibold">ArcheryScoreSystem</h1>
 
       {/* Navigation */}
       <nav className="flex items-center gap-8">
         <a href="/" className="hover:underline">Home</a>
-        <a href="/tournaments" className="hover:underline">Tournaments</a>
+        <a href="/competitions" className="hover:underline">Competitions</a>
         <a href="/about" className="hover:underline">About</a>
 
         {/* Login button */}

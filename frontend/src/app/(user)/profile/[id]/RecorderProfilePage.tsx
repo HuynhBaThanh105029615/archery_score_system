@@ -1,26 +1,66 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import RecorderDashboardUI, { ScoreItem } from "@/src/component/RecorderDashboardUI";
-import RecorderTournamentUI from "@/src/component/RecorderTournamentUI";
-import { tournaments } from "@/src/_data/tournaments";
+
+import RecorderDashboardUI, {
+  ScoreItem,
+  CompetitionItem,
+} from "@/src/component/RecorderDashboardUI";
+
+import RecorderCompetitionUI from "@/src/component/RecorderTournamentUI";
+
+import { competitionsApi } from "@/src/api";
+
+// Mock scores still used for now (replace with API later)
 import { allScores } from "@/src/_data/scores";
 
 export function RecorderProfilePage() {
-  const [selectedTournament, setSelectedTournament] = useState<number | null>(null);
   const router = useRouter();
 
-  // ✅ Flatten all scores
-  const allScoreList: ScoreItem[] = Object.values(allScores).flat();
+  const [competitions, setCompetitions] = useState<CompetitionItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Show only pending scores for the dashboard list
+  const [selectedCompetition, setSelectedCompetition] = useState<number | null>(
+    null
+  );
+
+  // -----------------------------------------------
+  // LOAD COMPETITIONS FROM BACKEND
+  // -----------------------------------------------
+  useEffect(() => {
+    const loadCompetitions = async () => {
+      try {
+        const data = await competitionsApi.list();
+
+        const mapped: CompetitionItem[] = data.map((c) => ({
+          competition_id: c.competition_id ?? 0,
+          name: c.name,
+          date: c.date,
+          location: c.location ?? "",
+          is_championship_part: !!c.is_championship_part,
+          created_by: c.created_by ?? null,
+        }));
+
+        setCompetitions(mapped);
+      } catch (err) {
+        console.error("Failed to load competitions", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCompetitions();
+  }, []);
+
+  // -----------------------------------------------
+  // MOCK SCORES (replace with API later)
+  // -----------------------------------------------
+  const allScoreList: ScoreItem[] = Object.values(allScores).flat();
   const pendingScores = allScoreList.filter((s) => s.status === "pending");
 
-  const handleEnterTournament = (id: number) => setSelectedTournament(id);
-
-  const handleBackToDashboard = () => setSelectedTournament(null);
+  const handleEnterCompetition = (id: number) => setSelectedCompetition(id);
+  const handleBackToDashboard = () => setSelectedCompetition(null);
 
   const handleApprove = (id: number) => {
     console.log("Approved score:", id);
@@ -30,17 +70,19 @@ export function RecorderProfilePage() {
     console.log("Disapproved score:", id);
   };
 
-  // ✅ Navigate to Archer Detail Page
   const handleViewDetails = (scoreId: number) => {
     router.push(`/recorder/archer/${scoreId}`);
   };
 
-  // ✅ Tournament Page
-  if (selectedTournament) {
-    const tournament = tournaments.find(
-      (t) => t.competition_id === selectedTournament
+  // -----------------------------------------------
+  // COMPETITION DETAIL PAGE
+  // -----------------------------------------------
+  if (selectedCompetition) {
+    const competition = competitions.find(
+      (c) => c.competition_id === selectedCompetition
     );
-    const scores = allScores[selectedTournament] || [];
+
+    const scores = allScores[selectedCompetition] || [];
 
     return (
       <div className="relative">
@@ -51,8 +93,8 @@ export function RecorderProfilePage() {
           ← Back
         </button>
 
-        <RecorderTournamentUI
-          tournamentName={tournament?.name || "Tournament"}
+        <RecorderCompetitionUI
+          competitionName={competition?.name || "Competition"}
           scores={scores}
           onApprove={handleApprove}
           onDisapprove={handleDisapprove}
@@ -61,12 +103,20 @@ export function RecorderProfilePage() {
     );
   }
 
-  // ✅ Dashboard (only pending scores)
+  // -----------------------------------------------
+  // MAIN DASHBOARD PAGE
+  // -----------------------------------------------
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-gray-500">Loading...</div>
+    );
+  }
+
   return (
     <RecorderDashboardUI
-      tournaments={tournaments}
-      scores={pendingScores} // ✅ Only pending
-      onEnterTournament={handleEnterTournament}
+      competitions={competitions}
+      scores={pendingScores}
+      onEnterCompetition={handleEnterCompetition}
       onDisapproveScore={handleDisapprove}
       onViewDetails={handleViewDetails}
     />

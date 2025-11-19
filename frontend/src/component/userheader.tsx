@@ -8,7 +8,7 @@ export function UserHeader() {
     <header className="bg-green-500 text-black px-6 py-4 flex items-center justify-between shadow-md">
       {/* Logo / Title */}
       <div className="text-xl font-bold">
-        <Link href="/">ArcheryScoreHub</Link>
+        <Link href="/">ArcheryScoreSystem</Link>
       </div>
 
       {/* Navigation Links */}
@@ -19,8 +19,8 @@ export function UserHeader() {
         <Link href="/recording" className="hover:underline">
           Recording
         </Link>
-        <Link href="/tournaments" className="hover:underline">
-          Tournaments
+        <Link href="/competitions" className="hover:underline">
+          Competitions
         </Link>
         <Link href="/about" className="hover:underline">
           About
