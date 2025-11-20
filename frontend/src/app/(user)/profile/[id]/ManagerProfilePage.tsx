@@ -59,6 +59,12 @@ export const ManagerProfilePage = ({ user }: { user: { id: number; name: string;
               {tab.label}
             </button>
           ))}
+
+          {/*NEW Leaderboard button */}
+          <button
+            onClick={() => window.location.href = "/leaderboard"}
+            className="px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700 transition"
+          >Leaderboard</button>
         </div>
 
         {/* Table content */}

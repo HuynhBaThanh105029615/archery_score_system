@@ -13,12 +13,13 @@ export interface CompetitionItem {
 }
 
 export interface ScoreItem {
-  id: number;
-  archer: string;
-  bow_type: string;
+  id: number;                          // required
+  archer: string;                      // archer_name
+  bow_type: string;                    // from division lookup
   competition_id: number;
   competition_name: string;
   submitted_at: string;
+  tournament_name?: string;
   total_score: number;
   status: "pending" | "approved";
   details?: {
@@ -27,6 +28,7 @@ export interface ScoreItem {
     shots: number[];
   }[];
 }
+
 
 interface Props {
   competitions: CompetitionItem[];
@@ -125,9 +127,10 @@ const CompetitionsDashboardUI: FC<Props> = ({
               className="px-3 py-2 text-sm border rounded-md"
             >
               <option value="All">All Bow Types</option>
-              {bowTypes.map((b) => (
-                <option key={b}>{b}</option>
+              {bowTypes.map((b, i) => (
+                <option key={i}>{b}</option>
               ))}
+
             </select>
 
             {/* Competition filter */}
@@ -137,8 +140,8 @@ const CompetitionsDashboardUI: FC<Props> = ({
               className="px-3 py-2 text-sm border rounded-md"
             >
               <option value="All">All Competitions</option>
-              {competitionNames.map((t) => (
-                <option key={t}>{t}</option>
+              {competitionNames.map((t, i) => (
+                <option key={i}>{t}</option>
               ))}
             </select>
 

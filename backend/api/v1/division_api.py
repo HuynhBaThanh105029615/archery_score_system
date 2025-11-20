@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from db.repositories import division as division_repo
+from db.repositories.division import division_repo
 from models.division import DivisionCreate
 
 router = APIRouter()
@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/")
 async def list_divisions(db=Depends(get_db)):
-    return await division_repo.list(db)
+    return await division_repo.get_all(db)
 
 
 @router.get("/{division_id}")

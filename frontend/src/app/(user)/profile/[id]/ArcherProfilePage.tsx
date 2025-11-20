@@ -113,6 +113,16 @@ export function ArcherProfilePage({ user }: ArcherProfilePageProps) {
 
   return (
     <div className="min-h-screen bg-[#E3FFE4] flex flex-col items-center py-10 px-6">
+      {/* Leaderboard Button */}
+      <div className="flex justify-end w-full max-w-5xl mx-auto mb-6">
+        <button
+          onClick={() => window.location.href = "/leaderboard"}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+        >
+          Leaderboard
+        </button>
+      </div>
+
       {/* Profile Overview */}
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-md border border-green-200 p-8 mb-10">
         <h1 className="text-3xl font-bold text-green-800 mb-6 text-center">

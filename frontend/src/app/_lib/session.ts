@@ -1,20 +1,27 @@
-// /src/app/_lib/session.ts
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies } from "next/headers.js";
 
-export function setUserSession(user: any) {
-  const cookieStore = cookies();
 
-  cookieStore.set("role", user.role, { path: "/" });
-  cookieStore.set("user_id", String(user.id), { path: "/" });
-}
+export async function getUser() {
+  // ⬅ FIX: await cookies()
+  const cookieStore = await cookies();
 
-export function getUserSession() {
-  const cookieStore = cookies();
+  const token = cookieStore.get("access_token")?.value;
 
-  return {
-    role: cookieStore.get("role")?.value ?? null,
-    user_id: cookieStore.get("user_id")?.value ?? null,
-  };
+  if (!token) return null;
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  const res = await fetch(`${API_URL}/api/v1/auth/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+
+  return await res.json();
 }

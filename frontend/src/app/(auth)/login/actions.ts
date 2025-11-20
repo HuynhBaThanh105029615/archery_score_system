@@ -2,7 +2,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { supabase } from "../../_lib/supabaseClient";
+import { supabase } from "@/src/app/_lib/supabaseClient";
 
 type LoginPayload = {
   email: string;
@@ -22,10 +22,12 @@ export async function loginAction({ email, password }: LoginPayload) {
 
   const role = user?.user_metadata?.role ?? "archer";
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set("access_token", token || "", { path: "/" });
   cookieStore.set("user_id", user?.id || "", { path: "/" });
   cookieStore.set("role", role, { path: "/" });
 
   return { token, role };
-}
+} 
+
+

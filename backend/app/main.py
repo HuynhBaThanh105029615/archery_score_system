@@ -59,7 +59,7 @@ async def add_security_headers(request, call_next):
 
 
 # ------------------------------
-# ⭐ Custom OpenAPI for JWT scheme
+# Custom OpenAPI for JWT scheme
 # ------------------------------
 app.openapi_schema = None
 
@@ -90,7 +90,7 @@ app.openapi = custom_openapi
 
 
 # ------------------------------
-# ⭐ Include all routers
+# Include all routers
 # ------------------------------
 app.include_router(auth_router,          prefix="/api/v1/auth",           tags=["Auth"])
 app.include_router(archers_router,       prefix="/api/v1/archers",        tags=["Archers"])

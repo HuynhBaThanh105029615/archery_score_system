@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import RecorderDashboardUI, {
   ScoreItem,
   CompetitionItem,
 } from "@/src/component/RecorderDashboardUI";
-
 import RecorderCompetitionUI from "@/src/component/RecorderTournamentUI";
 
 import { competitionsApi, scoresApi, divisionApi } from "@/src/api";
@@ -30,30 +29,34 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
   const [loading, setLoading] = useState(true);
   const [selectedCompetition, setSelectedCompetition] = useState<number | null>(null);
 
-  const getBowType = (division_id: number | null | undefined) => {
+  // -------------------------------------------------------
+  // Safe bow type lookup
+  // -------------------------------------------------------
+  const getBowType = (division_id: number | null | undefined): string => {
     if (!division_id) return "Unknown";
-    return divisions.find((d) => d.division_id === division_id)?.division_name ?? "Unknown";
+    const div = divisions.find((d) => d.division_id === division_id);
+    return div?.name ?? "Unknown";
   };
 
-  // ---------------------------
-  // LOAD INITIAL DASHBOARD DATA
-  // ---------------------------
+  // -------------------------------------------------------
+  // LOAD DASHBOARD DATA
+  // -------------------------------------------------------
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
 
-        const [divs, comps, scores] = await Promise.all([
+        const [divList, compList, scoreList] = await Promise.all([
           divisionApi.list(),
           competitionsApi.list(),
           scoresApi.list({ limit: 200 }),
         ]);
 
-        setDivisions(divs ?? []);
+        setDivisions(divList);
 
         setCompetitions(
-          (comps ?? []).map((c: any) => ({
-            competition_id: c.competition_id ?? 0,
+          compList.map((c: any): CompetitionItem => ({
+            competition_id: c.competition_id!,
             name: c.name,
             date: c.date,
             location: c.location ?? "",
@@ -62,23 +65,25 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
           }))
         );
 
-        const pending = (scores ?? []).filter((s: any) => s.status === "pending");
+        const pending = scoreList.filter((s: any) => s.is_approved === false);
 
         setPendingScores(
-          pending.map((s: any) => ({
-            id: s.score_id,
+          pending.map((s: any): ScoreItem => ({
+            id: s.score_id!,
             archer: s.archer_name,
             tournament_name: s.competition_name,
             bow_type: getBowType(s.division_id),
             total_score: s.total,
-            status: s.status,
-            submitted_at: s.created_at,
-            competition_id: s.competition_id,
+            status: s.is_approved ? "approved" : "pending",
+            submitted_at: s.created_at ?? "",
+            competition_id: s.competition_id!,
             competition_name: s.competition_name,
           }))
         );
+
+
       } catch (err) {
-        console.error("Failed to load dashboard data", err);
+        console.error("Failed to load recorder dashboard", err);
       } finally {
         setLoading(false);
       }
@@ -87,27 +92,34 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
     loadData();
   }, []);
 
+  // -------------------------------------------------------
+  // LOAD COMPETITION SCORES
+  // -------------------------------------------------------
   async function loadCompetitionScores(id: number) {
-    try {
-      const scores = await scoresApi.list({ competition_id: id });
+  try {
+    const scoreList = await scoresApi.list({ competition_id: id });
 
-      setCompetitionScores(
-        (scores ?? []).map((s: any) => ({
-          id: s.score_id,
-          archer: s.archer_name,
-          tournament_name: s.competition_name,
-          bow_type: getBowType(s.division_id),
-          total_score: s.total,
-          status: s.status,
-          submitted_at: s.created_at,
-          competition_id: s.competition_id,
-          competition_name: s.competition_name,
-        }))
-      );
-    } catch (err) {
-      console.error("Failed to load competition scores", err);
-    }
+    // Show ONLY pending scores
+    const pending = scoreList.filter((s: any) => s.is_approved === false);
+
+    setCompetitionScores(
+      pending.map((s: any): ScoreItem => ({
+        id: s.score_id!,
+        archer: s.archer_name,
+        tournament_name: s.competition_name,
+        bow_type: getBowType(s.division_id),
+        total_score: s.total,
+        status: "pending",
+        submitted_at: s.created_at ?? "",
+        competition_id: s.competition_id!,
+        competition_name: s.competition_name,
+      }))
+    );
+  } catch (err) {
+    console.error("Failed to load competition scores:", err);
   }
+}
+
 
   const handleEnterCompetition = async (id: number) => {
     setSelectedCompetition(id);
@@ -122,17 +134,17 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
       alert("Score approved");
       router.refresh();
     } catch {
-      alert("Failed to approve score");
+      alert("Failed to approve");
     }
   };
 
-  const handleDisapprove = async (id: number) => {
+  const handleReject = async (id: number) => {
     try {
       await scoresApi.reject(id);
       alert("Score rejected");
       router.refresh();
     } catch {
-      alert("Failed to reject score");
+      alert("Failed to reject");
     }
   };
 
@@ -140,13 +152,11 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
     router.push(`/recorder/archer/${scoreId}`);
   };
 
-  // ---------------------------
-  // COMPETITION DETAIL VIEW
-  // ---------------------------
+  // -------------------------------------------------------
+  // COMPETITION DETAIL PAGE
+  // -------------------------------------------------------
   if (selectedCompetition) {
-    const competition = competitions.find(
-      (c) => c.competition_id === selectedCompetition
-    );
+    const comp = competitions.find((c) => c.competition_id === selectedCompetition);
 
     return (
       <div className="relative">
@@ -158,29 +168,41 @@ export function RecorderProfilePage({ user }: RecorderProfileProps) {
         </button>
 
         <RecorderCompetitionUI
-          competitionName={competition?.name || "Competition"}
+          competitionName={comp?.name ?? "Competition"}
           scores={competitionScores}
           onApprove={handleApprove}
-          onDisapprove={handleDisapprove}
+          onDisapprove={handleReject}
         />
       </div>
     );
   }
 
-  // ---------------------------
+  // -------------------------------------------------------
   // MAIN DASHBOARD
-  // ---------------------------
+  // -------------------------------------------------------
   if (loading) {
-    return <div className="p-10 text-center text-gray-500">Loading...</div>;
+    return <div className="p-10 text-center text-gray-500">Loading…</div>;
   }
 
   return (
-    <RecorderDashboardUI
-      competitions={competitions}
-      scores={pendingScores}
-      onEnterCompetition={handleEnterCompetition}
-      onDisapproveScore={handleDisapprove}
-      onViewDetails={handleViewDetails}
-    />
+    <>
+      {/* ⭐ Leaderboard Button */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => router.push("/leaderboard")}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+        >
+          View Leaderboard
+        </button>
+      </div>
+
+      <RecorderDashboardUI
+        competitions={competitions}
+        scores={pendingScores}
+        onEnterCompetition={handleEnterCompetition}
+        onDisapproveScore={handleReject}
+        onViewDetails={handleViewDetails}
+      />
+    </>
   );
 }
