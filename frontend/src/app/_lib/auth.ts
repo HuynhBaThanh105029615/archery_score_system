@@ -1,4 +1,4 @@
-/* "use server";
+"use server";
 
 import { cookies } from "next/headers.js";
 
@@ -25,9 +25,9 @@ export async function getUser() {
 
   return await res.json();
 }
-*/
 
-export async function getUser() {
+
+/* export async function getUser() {
   // In a real app, you'd check cookies or JWT here.
   // For now, just simulate logged-in vs guest.
 
@@ -35,9 +35,10 @@ export async function getUser() {
   if (loggedIn) {
     return { 
       id: 1, 
-      name: "Tuan Le",
-      role: "archer", //change this attribute to the one's page you want an access
+      name: "Thanh Huynh",
+      role: "recorder", //change this attribute to the one's page you want an access
     };
   }
   return null;
 }
+*/

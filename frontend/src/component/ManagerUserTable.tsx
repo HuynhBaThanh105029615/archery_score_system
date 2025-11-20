@@ -1,34 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { recorderApi } from "@/src/api/recorderApi";
+
 export function ManagerUserTable() {
-  const users = [
-    { id: 1, name: "Alice Nguyen", email: "alice@mail.com", role: "Archer" },
-    { id: 2, name: "James Lee", email: "james@mail.com", role: "Recorder" },
-    { id: 3, name: "Sarah Kim", email: "sarah@mail.com", role: "Manager" },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await recorderApi.list();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to load recorders:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return <div className="p-4">Loading users...</div>;
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm p-4 overflow-x-auto">
+    <div className="bg-white border rounded-lg shadow p-4 overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="text-gray-600 border-b">
-            <th className="py-2 px-3">Name</th>
-            <th className="py-2 px-3">Email</th>
-            <th className="py-2 px-3">Role</th>
-            <th className="py-2 px-3">Status</th>
-            <th className="py-2 px-3">Actions</th>
+          <tr className="border-b">
+            <th className="px-3 py-2">Name</th>
+            <th className="px-3 py-2">Email</th>
+            <th className="px-3 py-2">Role</th>
+            <th className="px-3 py-2">Created At</th>
           </tr>
         </thead>
+
         <tbody>
           {users.map((u) => (
-            <tr key={u.id} className="border-b hover:bg-gray-100">
-              <td className="py-2 px-3">{u.name}</td>
-              <td className="py-2 px-3">{u.email}</td>
-              <td className="py-2 px-3">{u.role}</td>
-              <td className="py-2 px-3 text-green-700">Active</td>
-              <td className="py-2 px-3">
-                <button className="text-blue-600 hover:underline mr-2">Edit</button>
-                <button className="text-red-600 hover:underline">Remove</button>
+            <tr key={u.recorder_id} className="border-b hover:bg-gray-50">
+              <td className="px-3 py-2">{u.name}</td>
+              <td className="px-3 py-2">{u.email}</td>
+              <td className="px-3 py-2">{u.role}</td>
+              <td className="px-3 py-2">
+                {new Date(u.created_at).toLocaleString()}
               </td>
             </tr>
           ))}

@@ -12,6 +12,9 @@ from .archers import router as archers_router
 from .class_api import router as class_router
 from .division_api import router as division_router
 from .category_api import router as category_router
+from .recorder_api import router as recorder_router
+from .audit_api import router as audit_router
+
 
 __all__ = [
     "auth_router",
@@ -28,4 +31,6 @@ __all__ = [
     "class_router",
     "division_router",
     "category_router",
+    "recorder_router",
+    "audit_router",
 ]

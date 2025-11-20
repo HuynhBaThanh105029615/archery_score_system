@@ -1,4 +1,4 @@
-import type { CompetitionItem } from "@/src/app/(user)/competitions/page";
+import type { CompetitionItem } from "@/src/app/competitions/page";
 
 interface Props {
   competitions: CompetitionItem[];

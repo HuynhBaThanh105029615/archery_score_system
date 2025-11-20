@@ -21,6 +21,7 @@ from api.v1 import (
     class_router,
     division_router,
     category_router,
+    recorder_router,
 )
 
 setup_logging()
@@ -92,6 +93,9 @@ app.openapi = custom_openapi
 # ------------------------------
 # Include all routers
 # ------------------------------
+# ------------------------------
+# Include all routers
+# ------------------------------
 app.include_router(auth_router,          prefix="/api/v1/auth",           tags=["Auth"])
 app.include_router(archers_router,       prefix="/api/v1/archers",        tags=["Archers"])
 app.include_router(class_router,         prefix="/api/v1/classes",        tags=["Classes"])
@@ -102,7 +106,6 @@ app.include_router(rounds_router,        prefix="/api/v1/rounds",         tags=[
 app.include_router(equiv_router,         prefix="/api/v1/equivalent-rule",tags=["Equivalent Rule"])
 
 app.include_router(competitions_router,  prefix="/api/v1/competitions",   tags=["Competitions"])
-
 app.include_router(entries_router,       prefix="/api/v1/entries",        tags=["Entries"])
 app.include_router(validate_router,      prefix="/api/v1/validate",       tags=["Validation"])
 
@@ -110,6 +113,9 @@ app.include_router(scores_router,        prefix="/api/v1/scores",         tags=[
 app.include_router(leaderboard_router,   prefix="/api/v1/leaderboard",    tags=["Leaderboard"])
 app.include_router(export_router,        prefix="/api/v1/export",         tags=["Export"])
 app.include_router(audit_router,         prefix="/api/v1/audit",          tags=["Audit Logs"])
+app.include_router(recorder_router,      prefix="/api/v1/recorders",      tags=["Recorders"])
+app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit Logs"])
+
 
 
 # ------------------------------

@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class Recorder(BaseModel):
-    recorder_id: int
+class RecorderBase(BaseModel):
     name: str
     email: str
-    role: str               # ENUM: Admin, Recorder
-    created_at: Optional[str] = None
+    role: str   # "admin" / "recorder"
 
+class RecorderCreate(RecorderBase):
+    pass
 
-class RecorderCreate(BaseModel):
-    name: str
-    email: str
-    role: str               # ENUM
+class RecorderUpdate(BaseModel):
+    name: Optional[str]
+    email: Optional[str]
+    role: Optional[str]

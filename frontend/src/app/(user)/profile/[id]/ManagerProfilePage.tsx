@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Clock } from "lucide-react";
+
 import { ManagerUserTable } from "@/src/component/ManagerUserTable";
 import { CompetitionsTable } from "@/src/component/CompetitionsTable";
 import { HistoryTable } from "@/src/component/HistoryTable";
@@ -26,12 +27,12 @@ export const ManagerProfilePage = ({ user }: { user: { id: number; name: string;
           Manage your users, competitions, and tournament history here.
         </p>
 
-        {/* Stats cards */}
+        {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {stats.map((s) => (
             <div
               key={s.id}
-              className="bg-white shadow-sm rounded-xl p-6 flex flex-col items-center justify-center text-center border border-green-100 hover:shadow-md transition"
+              className="bg-white shadow-sm rounded-xl p-6 flex flex-col items-center justify-center text-center border border-green-100"
             >
               <Clock className="w-6 h-6 mb-2 text-green-600" />
               <h3 className="text-2xl font-semibold text-gray-800">{s.value}</h3>
@@ -40,7 +41,7 @@ export const ManagerProfilePage = ({ user }: { user: { id: number; name: string;
           ))}
         </section>
 
-        {/* Toggle buttons */}
+        {/* Tabs */}
         <div className="flex gap-3 mb-6">
           {[
             { id: "users", label: "Manage Users" },
@@ -54,20 +55,21 @@ export const ManagerProfilePage = ({ user }: { user: { id: number; name: string;
                 activeTab === tab.id
                   ? "bg-green-600 text-white border-green-600"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-green-50"
-              } transition`}
+              }`}
             >
               {tab.label}
             </button>
           ))}
 
-          {/*NEW Leaderboard button */}
           <button
-            onClick={() => window.location.href = "/leaderboard"}
-            className="px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700 transition"
-          >Leaderboard</button>
+            onClick={() => (window.location.href = "/leaderboard")}
+            className="px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700"
+          >
+            Leaderboard
+          </button>
         </div>
 
-        {/* Table content */}
+        {/* Content */}
         {activeTab === "users" && <ManagerUserTable />}
         {activeTab === "competitions" && <CompetitionsTable />}
         {activeTab === "history" && <HistoryTable />}

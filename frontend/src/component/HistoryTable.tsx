@@ -1,11 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { auditApi } from "@/src/api";
+
 export function HistoryTable() {
-  const history = [
-    { id: 1, action: "Approved scores", date: "2025-03-01", by: "Manager" },
-    { id: 2, action: "Created competition", date: "2025-03-02", by: "James Lee" },
-    { id: 3, action: "Removed user", date: "2025-03-03", by: "Admin" },
-  ];
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await auditApi.list({ limit: 100 });
+        setHistory(data);
+      } catch (err) {
+        console.error("Failed to load audit history:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  if (loading) return <div className="p-4">Loading history...</div>;
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm p-4 overflow-x-auto">
@@ -14,15 +31,18 @@ export function HistoryTable() {
           <tr className="text-gray-600 border-b">
             <th className="py-2 px-3">Action</th>
             <th className="py-2 px-3">Date</th>
-            <th className="py-2 px-3">Performed By</th>
+            <th className="py-2 px-3">User</th>
           </tr>
         </thead>
+
         <tbody>
           {history.map((h) => (
             <tr key={h.id} className="border-b hover:bg-gray-100">
               <td className="py-2 px-3">{h.action}</td>
-              <td className="py-2 px-3">{h.date}</td>
-              <td className="py-2 px-3">{h.by}</td>
+              <td className="py-2 px-3">
+                {new Date(h.created_at).toLocaleString()}
+              </td>
+              <td className="py-2 px-3">{h.user_name ?? "System"}</td>
             </tr>
           ))}
         </tbody>
